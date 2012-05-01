@@ -13,6 +13,15 @@
 #define DEFAULT_MAX_CROPPING_RATIO  (0.25)
 #define DEFAULT_AUTOCROP            (1)
 
+/* Safe XDECREF for object states that handles nested deallocations */
+#define ZAP(v) do {\
+        PyObject *tmp = (PyObject *)(v); \
+        (v) = NULL; \
+        Py_XDECREF(tmp); \
+} while (0)
+
+static PyTypeObject *p_Puzzle_Type = NULL;
+
 typedef struct {
     PyObject_HEAD
     PyObject *dict;
@@ -34,89 +43,30 @@ puzzle_new(PyObject *dummy)
 
     PuzzleObject *self = NULL;
 
-    self = (PuzzleObject *)PyObject_NEW(PuzzleObject, &Puzzle_Type);
-    if (self != NULL) {
-        puzzle_init_context(&(self->context));
+    self = (PuzzleObject *)PyObject_GC_New(PuzzleObject, p_Puzzle_Type);
+    if (self == NULL) {
+        return NULL;
     }
-    
+    PyObject_GC_Track(self);
+
+    puzzle_init_context(&self->context);
+    self->dict = NULL;
+
     return self;
 }
 
-static PyMethodDef PyPuzzleMethods[] = {
-    {"Puzzle", (PyCFunction)puzzle_new, METH_NOARGS, ""},
-    {NULL, NULL, 0, NULL}
-};
-
-void
+static void
 puzzle_dealloc(PuzzleObject *self)
 {
-    puzzle_free_context(&(self->context));
-    PyMem_DEL(self);
-}
+    PyObject_GC_UnTrack(self);
+    Py_TRASHCAN_SAFE_BEGIN(self);
 
-static PyObject *
-puzzle_get_attr(PuzzleObject *self, char *attrname)
-{
-    PyObject *value = NULL;
-    if (value == NULL & self->dict !=NULL) {
-        value = PyDict_GetItemString(self->dict, attrname);
-        if (value != NULL ) {
-            Py_INCREF(value);
-            return value;
-        }
-    }
-    return Py_FindMethod(PuzzleObjectMethods, self, attrname);
+    ZAP(self->dict);
+    puzzle_free_context(&self->context);
+    
+    PyObject_GC_Del(self);
+    Py_TRASHCAN_SAFE_END(self);
 }
-
-static int
-puzzle_set_attr(PuzzleObject *self, char *attrname, PyObject *value)
-{
-    if (value == NULL) {
-        int rv = -1;
-        if (self->dict != NULL) {
-            rv = PyDict_DelItemString(self->dictm attrname);
-        }
-        if (rv < 0) {
-            PyErr_SetString(PyExc_AttributeError, "Non-existing attribute");
-        }
-        return rv;
-    }
-    if (self->dict == NULL) {
-        self->dict = PyDict_NEW();
-        if (self->dict == NULL) {
-            return -1;
-        }
-    }
-    return PyDict_SetItemString(self->dict, attrname, value);
-}
-
-PyTypeObject Puzzle_Type = {
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                          /* ob_size */
-    "pypuzzle.Puzzle",          /* tp_name */
-    sizeof(PuzzleObject),       /* tp_basicsize */
-    0,                          /* tp_itemsize */
-    /* Methods */
-    (destructor)puzzle_dealloc, /* tp_dealloc */
-    0,                          /* tp_print */
-    (getattrfunc)puzzle_get_attr,   /* tp_getattr */
-    (setattrfunc)puzzle_set_attr,   /* tp_setattr */
-    0,                          /* tp_compare */
-    0,                          /* tp_repr */
-    0,                          /* tp_as_number */
-    0,                          /* tp_as_sequence */
-    0,                          /* tp_as_mapping */
-    0,                          /* tp_hash */
-    0,                          /* tp_call */
-    0,                          /* tp_str */
-    0,                          /* tp_getattro */
-    0,                          /* tp_setattro */
-    0,                          /* tp_as_buffer */
-    0,                          /* tp_flags */
-    0,                          /* tp_doc */
-    0,                          /* tp_traverse */
-    0,                          /* tp_clear */
-};
 
 
 static PyObject *
@@ -267,23 +217,92 @@ set_autocrop(PyObject *self, PyObject *args)
     return Py_BuildValue("i", result);
 }
 
+static PyMethodDef PyPuzzleMethods[] = {
+    {"Puzzle", (PyCFunction)puzzle_new, METH_NOARGS, ""},
+    {NULL, NULL, 0, NULL}
+};
 
 static PyMethodDef PuzzleObjectMethods[] = {
     {"get_distance", get_distance, METH_VARARGS, "Get the distance between two images."},
-    {"set_max_width", set_max_width, METH_VARARGES, "Set the max width of images. Default is 3000 pixels."},
-    {"set_max_height", set_max_height, METH_VARARGES, "Set the max height of images. Default is 3000 pixels."},
-    {"set_lambdas", set_lambdas, METH_VARARGES, "Set the lambdas value. Images are divided in lambda x lambda blocks. Default is 9."},
-    {"set_p_ratio", set_p_ratio, METH_VARARGES, "Set the p ratio. The p ratio determines the size of the centered zone which the average intensity of each block is based upon. Default is 2.0."},
-    {"set_noise_cutoff", set_noise_cutoff, METH_VARARGES, "Set the noise cutoff value. If you raise that value, more zones with little difference of intensity will be considered as similar. Default is 2."},
-    {"set_contrast_barrier_for_cropping", set_contrast_barrier_for_cropping, METH_VARARGES, "Set the tolerance of auto-cropping borders. Default is 5."},
-    {"set_max_cropping_ratio", set_max_cropping_ratio, METH_VARARGES, "Set the safe-guard value againt unwanted excessive auto-cropping. Defalut is 0.25."},
-    {"set_autocrop", set_autocrop, METH_VARARGES, "Any value except 0 will enable auto-cropping. It is enabled by default."},
+    {"set_max_width", set_max_width, METH_VARARGS, "Set the max width of images. Default is 3000 pixels."},
+    {"set_max_height", set_max_height, METH_VARARGS, "Set the max height of images. Default is 3000 pixels."},
+    {"set_lambdas", set_lambdas, METH_VARARGS, "Set the lambdas value. Images are divided in lambda x lambda blocks. Default is 9."},
+    {"set_p_ratio", set_p_ratio, METH_VARARGS, "Set the p ratio. The p ratio determines the size of the centered zone which the average intensity of each block is based upon. Default is 2.0."},
+    {"set_noise_cutoff", set_noise_cutoff, METH_VARARGS, "Set the noise cutoff value. If you raise that value, more zones with little difference of intensity will be considered as similar. Default is 2."},
+    {"set_contrast_barrier_for_cropping", set_contrast_barrier_for_cropping, METH_VARARGS, "Set the tolerance of auto-cropping borders. Default is 5."},
+    {"set_max_cropping_ratio", set_max_cropping_ratio, METH_VARARGS, "Set the safe-guard value againt unwanted excessive auto-cropping. Defalut is 0.25."},
+    {"set_autocrop", set_autocrop, METH_VARARGS, "Any value except 0 will enable auto-cropping. It is enabled by default."},
     {NULL, NULL, 0, NULL}
+};
+
+static PyObject *
+puzzle_get_attr(PuzzleObject *self, char *attrname)
+{
+    PyObject *value = NULL;
+    if (value == NULL && self->dict !=NULL) {
+        value = PyDict_GetItemString(self->dict, attrname);
+        if (value != NULL ) {
+            Py_INCREF(value);
+            return value;
+        }
+    }
+    return Py_FindMethod(PuzzleObjectMethods, (PyObject *)self, attrname);
+}
+
+static int
+puzzle_set_attr(PuzzleObject *self, char *attrname, PyObject *value)
+{
+    if (value == NULL) {
+        int rv = -1;
+        if (self->dict != NULL) {
+            rv = PyDict_DelItemString(self->dict, attrname);
+        }
+        if (rv < 0) {
+            PyErr_SetString(PyExc_AttributeError, "Non-existing attribute");
+        }
+        return rv;
+    }
+    if (self->dict == NULL) {
+        self->dict = PyDict_New();
+        if (self->dict == NULL) {
+            return -1;
+        }
+    }
+    return PyDict_SetItemString(self->dict, attrname, value);
+}
+
+static PyTypeObject Puzzle_Type = {
+    PyObject_HEAD_INIT(&PyType_Type)
+    0,                          /* ob_size */
+    "pypuzzle.Puzzle",          /* tp_name */
+    sizeof(PuzzleObject),       /* tp_basicsize */
+    0,                          /* tp_itemsize */
+    /* Methods */
+    (destructor)puzzle_dealloc, /* tp_dealloc */
+    0,                          /* tp_print */
+    (getattrfunc)puzzle_get_attr,   /* tp_getattr */
+    (setattrfunc)puzzle_set_attr,   /* tp_setattr */
+    0,                          /* tp_compare */
+    0,                          /* tp_repr */
+    0,                          /* tp_as_number */
+    0,                          /* tp_as_sequence */
+    0,                          /* tp_as_mapping */
+    0,                          /* tp_hash */
+    0,                          /* tp_call */
+    0,                          /* tp_str */
+    0,                          /* tp_getattro */
+    0,                          /* tp_setattro */
+    0,                          /* tp_as_buffer */
+    0,                          /* tp_flags */
+    0,                          /* tp_doc */
+    0,                          /* tp_traverse */
+    0,                          /* tp_clear */
 };
 
 PyMODINIT_FUNC
 initpypuzzle(void)
 {
+    p_Puzzle_Type = &Puzzle_Type;
     (void) Py_InitModule("pypuzzle", PyPuzzleMethods);
 }
 
