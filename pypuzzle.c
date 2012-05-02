@@ -36,6 +36,27 @@ typedef struct {
     int autocrop;
 } PuzzleObject;
 
+static PyObject *
+cvec_to_tuple(PuzzleCvec *cvec)
+{
+    int i = 0;
+    PyObject *tuple = PyTuple_New(cvec->sizeof_vec);
+    if (!tuple) {
+        return NULL;
+    }
+
+    for (i = 0; i < cvec->sizeof_vec; i++) {
+        PyObject *value = Py_BuildValue("b", cvec->vec[i]);
+        if (!value) {
+            Py_DECREF(tuple);
+            return NULL;
+        }
+        PyTuple_SetItem(tuple, i, value);
+    }
+
+    return tuple;
+}
+
 static PuzzleObject *
 puzzle_new(PyObject *dummy)
 {
@@ -77,7 +98,7 @@ get_distance(PyObject *self, PyObject *args)
     const char *file_path_1;
     const char *file_path_2;
     
-    if (!PyArg_ParseTuple(args, "ss", &file_path_1, &file_path_2)){
+    if (!PyArg_ParseTuple(args, "ss", &file_path_1, &file_path_2)) {
         return NULL;
     }
     
@@ -95,6 +116,29 @@ get_distance(PyObject *self, PyObject *args)
     puzzle_free_cvec(&po->context, &cvec_2);
 
     return Py_BuildValue("d", distance);
+}
+
+static PyObject *
+get_cvec(PyObject *self, PyObject *args)
+{
+    PuzzleObject *po = (PuzzleObject *)self;
+
+    const char *file_path;
+
+    if (!PyArg_ParseTuple(args, "s", &file_path)) {
+        return NULL;
+    }
+
+    PuzzleCvec cvec;
+    puzzle_init_cvec(&po->context, &cvec);
+
+    puzzle_fill_cvec_from_file(&po->context, &cvec, file_path);
+
+    PyObject *cvec_tuple = cvec_to_tuple(&cvec);
+
+    puzzle_free_cvec(&po->context, &cvec);
+
+    return cvec_tuple;
 }
 
 static PyObject *
@@ -224,6 +268,7 @@ static PyMethodDef PyPuzzleMethods[] = {
 
 static PyMethodDef PuzzleObjectMethods[] = {
     {"get_distance", get_distance, METH_VARARGS, "Get the distance between two images."},
+    {"get_cvec", get_cvec, METH_VARARGS, "Get the cvec of an image."},
     {"set_max_width", set_max_width, METH_VARARGS, "Set the max width of images. Default is 3000 pixels."},
     {"set_max_height", set_max_height, METH_VARARGS, "Set the max height of images. Default is 3000 pixels."},
     {"set_lambdas", set_lambdas, METH_VARARGS, "Set the lambdas value. Images are divided in lambda x lambda blocks. Default is 9."},
