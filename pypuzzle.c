@@ -91,7 +91,7 @@ puzzle_dealloc(PuzzleObject *self)
 
 
 static PyObject *
-get_distance(PyObject *self, PyObject *args)
+get_distance_from_file(PyObject *self, PyObject *args)
 {
     PuzzleObject *po = (PuzzleObject *)self;
 
@@ -119,7 +119,7 @@ get_distance(PyObject *self, PyObject *args)
 }
 
 static PyObject *
-get_cvec(PyObject *self, PyObject *args)
+fill_cvec_from_file(PyObject *self, PyObject *args)
 {
     PuzzleObject *po = (PuzzleObject *)self;
 
@@ -267,8 +267,8 @@ static PyMethodDef PyPuzzleMethods[] = {
 };
 
 static PyMethodDef PuzzleObjectMethods[] = {
-    {"get_distance", get_distance, METH_VARARGS, "Get the distance between two images."},
-    {"get_cvec", get_cvec, METH_VARARGS, "Get the cvec of an image."},
+    {"get_distance_from_file", get_distance_from_file, METH_VARARGS, "Get the distance between two images."},
+    {"fill_cvec_from_file", fill_cvec_from_file, METH_VARARGS, "Get the cvec of an image."},
     {"set_max_width", set_max_width, METH_VARARGS, "Set the max width of images. Default is 3000 pixels."},
     {"set_max_height", set_max_height, METH_VARARGS, "Set the max height of images. Default is 3000 pixels."},
     {"set_lambdas", set_lambdas, METH_VARARGS, "Set the lambdas value. Images are divided in lambda x lambda blocks. Default is 9."},
