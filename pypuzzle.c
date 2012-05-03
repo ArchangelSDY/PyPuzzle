@@ -57,6 +57,45 @@ cvec_to_tuple(PuzzleCvec *cvec)
     return tuple;
 }
 
+static void
+tuple_to_cvec(PyObject *tuple, PuzzleCvec *cvec)
+{
+    int tuple_size = PyTuple_Size(tuple);
+    signed char cvec_vec[tuple_size];
+    
+    int i = 0;
+    for (i = 0; i < tuple_size; i++) {
+        PyObject *item = PyTuple_GetItem(tuple, i);
+        cvec_vec[i] = (signed char)PyInt_AsLong(item);
+    }
+    
+    cvec->sizeof_vec = tuple_size;
+    cvec->vec = cvec_vec;
+}
+
+static PyObject *
+compressed_cvec_to_tuple(PuzzleCompressedCvec *compressed_cvec)
+{
+    // Create tuple
+    PyObject *tuple = PyTuple_New(compressed_cvec->sizeof_compressed_vec);
+    if (!tuple) {
+        return NULL;
+    }
+    
+    // Fill tuple
+    int i = 0;
+    for (i = 0; i < compressed_cvec->sizeof_compressed_vec; i++) {
+        PyObject *value = Py_BuildValue("B", compressed_cvec->vec[i]);
+        if (!value) {
+            Py_DECREF(tuple);
+            return NULL;
+        }
+        PyTuple_SetItem(tuple, i, value);
+    }
+    
+    return tuple;
+}
+
 static PuzzleObject *
 puzzle_new(PyObject *dummy)
 {
@@ -94,7 +133,6 @@ static PyObject *
 get_distance_from_file(PyObject *self, PyObject *args)
 {
     PuzzleObject *po = (PuzzleObject *)self;
-
     const char *file_path_1;
     const char *file_path_2;
     
@@ -119,26 +157,56 @@ get_distance_from_file(PyObject *self, PyObject *args)
 }
 
 static PyObject *
-fill_cvec_from_file(PyObject *self, PyObject *args)
+get_cvec_from_file(PyObject *self, PyObject *args)
 {
     PuzzleObject *po = (PuzzleObject *)self;
-
     const char *file_path;
 
     if (!PyArg_ParseTuple(args, "s", &file_path)) {
         return NULL;
     }
-
+    
+    // Initialize cvec
     PuzzleCvec cvec;
     puzzle_init_cvec(&po->context, &cvec);
-
+    
+    // Fill cvec
     puzzle_fill_cvec_from_file(&po->context, &cvec, file_path);
-
+    
+    // Convert cvec to tuple
     PyObject *cvec_tuple = cvec_to_tuple(&cvec);
 
     puzzle_free_cvec(&po->context, &cvec);
 
     return cvec_tuple;
+}
+
+static PyObject *
+compress_cvec(PyObject *self, PyObject *args)
+{
+    PuzzleObject *po = (PuzzleObject *)self;
+    PyObject *cvec_tuple;
+
+    if (!PyArg_ParseTuple(args, "O", &cvec_tuple)) {
+        return NULL;
+    }
+    
+    // Convert tuple to cvec
+    PuzzleCvec cvec;
+    puzzle_init_cvec(&po->context, &cvec);
+    tuple_to_cvec(cvec_tuple, &cvec);
+    
+    // Compress cvec
+    PuzzleCompressedCvec compressed_cvec;
+    puzzle_init_compressed_cvec(&po->context, &compressed_cvec);
+    puzzle_compress_cvec(&po->context, &compressed_cvec, &cvec);
+    
+    // Convert compressed cvec to tuple
+    PyObject *compressed_cvec_tuple = compressed_cvec_to_tuple(&compressed_cvec);
+    
+    puzzle_free_compressed_cvec(&po->context, &compressed_cvec);
+
+    return compressed_cvec_tuple;
 }
 
 static PyObject *
@@ -268,7 +336,8 @@ static PyMethodDef PyPuzzleMethods[] = {
 
 static PyMethodDef PuzzleObjectMethods[] = {
     {"get_distance_from_file", get_distance_from_file, METH_VARARGS, "Get the distance between two images."},
-    {"fill_cvec_from_file", fill_cvec_from_file, METH_VARARGS, "Get the cvec of an image."},
+    {"get_cvec_from_file", get_cvec_from_file, METH_VARARGS, "Get the cvec of an image."},
+    {"compress_cvec", compress_cvec, METH_VARARGS, "Compress cvec."},
     {"set_max_width", set_max_width, METH_VARARGS, "Set the max width of images. Default is 3000 pixels."},
     {"set_max_height", set_max_height, METH_VARARGS, "Set the max height of images. Default is 3000 pixels."},
     {"set_lambdas", set_lambdas, METH_VARARGS, "Set the lambdas value. Images are divided in lambda x lambda blocks. Default is 9."},
