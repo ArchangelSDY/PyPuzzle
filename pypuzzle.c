@@ -96,6 +96,22 @@ compressed_cvec_to_tuple(PuzzleCompressedCvec *compressed_cvec)
     return tuple;
 }
 
+static void
+compressed_tuple_to_cvec(PyObject *compressed_tuple, PuzzleCompressedCvec *compressed_cvec)
+{
+    int tuple_size = PyTuple_Size(compressed_tuple);
+    unsigned char cvec_vec[tuple_size];
+    
+    int i = 0;
+    for (i = 0; i < tuple_size; i++) {
+        PyObject *item = PyTuple_GetItem(compressed_tuple, i);
+        cvec_vec[i] = (signed char)PyInt_AsLong(item);
+    }
+    
+    compressed_cvec->sizeof_compressed_vec = tuple_size;
+    compressed_cvec->vec = cvec_vec;
+}
+
 static PuzzleObject *
 puzzle_new(PyObject *dummy)
 {
@@ -207,6 +223,34 @@ compress_cvec(PyObject *self, PyObject *args)
     puzzle_free_compressed_cvec(&po->context, &compressed_cvec);
 
     return compressed_cvec_tuple;
+}
+
+static PyObject *
+uncompress_cvec(PyObject *self, PyObject *args)
+{
+    PuzzleObject *po = (PuzzleObject *)self;
+    PyObject *compressed_cvec_tuple;
+
+    if (!PyArg_ParseTuple(args, "O", &compressed_cvec_tuple)) {
+        return NULL;
+    }
+    
+    // Convert tuple to cvec
+    PuzzleCompressedCvec compressed_cvec;
+    puzzle_init_compressed_cvec(&po->context, &compressed_cvec);
+    compressed_tuple_to_cvec(compressed_cvec_tuple, &compressed_cvec);
+    
+    // Uncompress cvec
+    PuzzleCvec cvec;
+    puzzle_init_cvec(&po->context, &cvec);
+    puzzle_uncompress_cvec(&po->context, &compressed_cvec, &cvec);
+    
+    // Convert uncompressed cvec to tuple
+    PyObject *cvec_tuple = cvec_to_tuple(&cvec);
+
+    puzzle_free_cvec(&po->context, &cvec);
+
+    return cvec_tuple;
 }
 
 static PyObject *
@@ -338,6 +382,7 @@ static PyMethodDef PuzzleObjectMethods[] = {
     {"get_distance_from_file", get_distance_from_file, METH_VARARGS, "Get the distance between two images."},
     {"get_cvec_from_file", get_cvec_from_file, METH_VARARGS, "Get the cvec of an image."},
     {"compress_cvec", compress_cvec, METH_VARARGS, "Compress cvec."},
+    {"uncompress_cvec", uncompress_cvec, METH_VARARGS, "Uncompress cvec."},
     {"set_max_width", set_max_width, METH_VARARGS, "Set the max width of images. Default is 3000 pixels."},
     {"set_max_height", set_max_height, METH_VARARGS, "Set the max height of images. Default is 3000 pixels."},
     {"set_lambdas", set_lambdas, METH_VARARGS, "Set the lambdas value. Images are divided in lambda x lambda blocks. Default is 9."},
