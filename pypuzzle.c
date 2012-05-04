@@ -61,8 +61,8 @@ static void
 tuple_to_cvec(PyObject *tuple, PuzzleCvec *cvec)
 {
     int tuple_size = PyTuple_Size(tuple);
-    signed char cvec_vec[tuple_size];
-    
+    signed char *cvec_vec = (signed char *)calloc(tuple_size, sizeof(signed char));
+
     int i = 0;
     for (i = 0; i < tuple_size; i++) {
         PyObject *item = PyTuple_GetItem(tuple, i);
@@ -100,7 +100,7 @@ static void
 compressed_tuple_to_cvec(PyObject *compressed_tuple, PuzzleCompressedCvec *compressed_cvec)
 {
     int tuple_size = PyTuple_Size(compressed_tuple);
-    unsigned char cvec_vec[tuple_size];
+    unsigned char *cvec_vec = (unsigned char *)calloc(tuple_size, sizeof(unsigned char));
     
     int i = 0;
     for (i = 0; i < tuple_size; i++) {
@@ -173,6 +173,33 @@ get_distance_from_file(PyObject *self, PyObject *args)
 }
 
 static PyObject *
+get_distance_from_cvec(PyObject *self, PyObject *args)
+{
+    PuzzleObject *po = (PuzzleObject *)self;
+    PyObject *cvec_tuple_1;
+    PyObject *cvec_tuple_2;
+
+    if (!PyArg_ParseTuple(args, "OO", &cvec_tuple_1, &cvec_tuple_2)) {
+        return NULL;
+    }
+    
+    PuzzleCvec cvec_1, cvec_2;
+    puzzle_init_cvec(&po->context, &cvec_1);
+    puzzle_init_cvec(&po->context, &cvec_2);
+
+    // Convert tuple to cvec
+    tuple_to_cvec(cvec_tuple_1, &cvec_1);
+    tuple_to_cvec(cvec_tuple_2, &cvec_2);
+    
+    double distance = puzzle_vector_normalized_distance(&po->context, &cvec_1, &cvec_2, 1);
+    
+    puzzle_free_cvec(&po->context, &cvec_1);
+    puzzle_free_cvec(&po->context, &cvec_2);
+
+    return Py_BuildValue("d", distance);
+}
+
+static PyObject *
 get_cvec_from_file(PyObject *self, PyObject *args)
 {
     PuzzleObject *po = (PuzzleObject *)self;
@@ -220,6 +247,7 @@ compress_cvec(PyObject *self, PyObject *args)
     // Convert compressed cvec to tuple
     PyObject *compressed_cvec_tuple = compressed_cvec_to_tuple(&compressed_cvec);
     
+    puzzle_free_cvec(&po->context, &cvec);
     puzzle_free_compressed_cvec(&po->context, &compressed_cvec);
 
     return compressed_cvec_tuple;
@@ -248,6 +276,7 @@ uncompress_cvec(PyObject *self, PyObject *args)
     // Convert uncompressed cvec to tuple
     PyObject *cvec_tuple = cvec_to_tuple(&cvec);
 
+    puzzle_free_compressed_cvec(&po->context, &compressed_cvec);
     puzzle_free_cvec(&po->context, &cvec);
 
     return cvec_tuple;
@@ -379,7 +408,8 @@ static PyMethodDef PyPuzzleMethods[] = {
 };
 
 static PyMethodDef PuzzleObjectMethods[] = {
-    {"get_distance_from_file", get_distance_from_file, METH_VARARGS, "Get the distance between two images."},
+    {"get_distance_from_file", get_distance_from_file, METH_VARARGS, "Get normalized distance between two images."},
+    {"get_distance_from_cvec", get_distance_from_cvec, METH_VARARGS, "Get normalized distance between two cvec tuples."},
     {"get_cvec_from_file", get_cvec_from_file, METH_VARARGS, "Get the cvec of an image."},
     {"compress_cvec", compress_cvec, METH_VARARGS, "Compress cvec."},
     {"uncompress_cvec", uncompress_cvec, METH_VARARGS, "Uncompress cvec."},
