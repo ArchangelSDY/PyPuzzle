@@ -1,0 +1,14 @@
+NOTE: You need Python, libpuzzle and GD2 library installed on your system to use or build pypuzzle.
+For more details, consult 'COMPLIATION' section on this page: http://download.pureftpd.org/pub/pure-ftpd/misc/libpuzzle/doc/README.
+
+Distutils
+---------
+
+Build and install pypuzzle with the following commands:
+
+    (if necessary, become root)
+    tar -zxvf pypuzzle-$VER.tar.gz
+    cd pypuzzle-$VER
+    python setup.py install
+
+$VER should be substituted with the pypuzzle version number, e.g. 1.0.

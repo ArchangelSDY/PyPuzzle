@@ -9,7 +9,7 @@
 #define DEFAULT_LAMBDAS             (9)
 #define DEFAULT_P_RATIO             (2.0)
 #define DEFAULT_NOISE_CUTOFF        (2)
-#define DEFAULT_CONTRAST_BARRIER   (5)
+#define DEFAULT_CONTRAST_BARRIER    (5)
 #define DEFAULT_MAX_CROPPING_RATIO  (0.25)
 #define DEFAULT_AUTOCROP            (1)
 
@@ -26,25 +26,22 @@ typedef struct {
     PyObject_HEAD
     PyObject *dict;
     PuzzleContext context;
-    unsigned int max_width;
-    unsigned int max_height;
-    unsigned int lambdas;
-    double p_ratio;
-    double noise_cutoff;
-    double contrast_barrier_for_cropping;
-    double max_cropping_ratio;
-    int autocrop;
 } PuzzleObject;
 
+/**************************************************
+// Utility functions
+**************************************************/
+
+/* Convert PuzzleCvec to tuple */
 static PyObject *
 cvec_to_tuple(PuzzleCvec *cvec)
 {
-    int i = 0;
     PyObject *tuple = PyTuple_New(cvec->sizeof_vec);
     if (!tuple) {
         return NULL;
     }
 
+    int i = 0;
     for (i = 0; i < cvec->sizeof_vec; i++) {
         PyObject *value = Py_BuildValue("b", cvec->vec[i]);
         if (!value) {
@@ -57,6 +54,7 @@ cvec_to_tuple(PuzzleCvec *cvec)
     return tuple;
 }
 
+/* Convert tuple to PuzzleCvec */
 static void
 tuple_to_cvec(PyObject *tuple, PuzzleCvec *cvec)
 {
@@ -73,6 +71,7 @@ tuple_to_cvec(PyObject *tuple, PuzzleCvec *cvec)
     cvec->vec = cvec_vec;
 }
 
+/* Convert PuzzleCompressedCvec to tuple */
 static PyObject *
 compressed_cvec_to_tuple(PuzzleCompressedCvec *compressed_cvec)
 {
@@ -96,6 +95,7 @@ compressed_cvec_to_tuple(PuzzleCompressedCvec *compressed_cvec)
     return tuple;
 }
 
+/* Convert tuple to PuzzleCompressedCvec */
 static void
 compressed_tuple_to_cvec(PyObject *compressed_tuple, PuzzleCompressedCvec *compressed_cvec)
 {
@@ -112,6 +112,11 @@ compressed_tuple_to_cvec(PyObject *compressed_tuple, PuzzleCompressedCvec *compr
     compressed_cvec->vec = cvec_vec;
 }
 
+/**************************************************
+// PuzzleObject methods
+**************************************************/
+
+/* Initialize PuzzleObject */
 static PuzzleObject *
 puzzle_new(PyObject *dummy)
 {
@@ -131,6 +136,7 @@ puzzle_new(PyObject *dummy)
     return self;
 }
 
+/* Destructor for PuzzleObject */
 static void
 puzzle_dealloc(PuzzleObject *self)
 {
@@ -144,7 +150,7 @@ puzzle_dealloc(PuzzleObject *self)
     Py_TRASHCAN_SAFE_END(self);
 }
 
-
+/* Get normalized distance between two image files */
 static PyObject *
 get_distance_from_file(PyObject *self, PyObject *args)
 {
@@ -172,6 +178,7 @@ get_distance_from_file(PyObject *self, PyObject *args)
     return Py_BuildValue("d", distance);
 }
 
+/* Get normalized distance between two PuzzleCvec objects */
 static PyObject *
 get_distance_from_cvec(PyObject *self, PyObject *args)
 {
@@ -199,6 +206,7 @@ get_distance_from_cvec(PyObject *self, PyObject *args)
     return Py_BuildValue("d", distance);
 }
 
+/* Calculate PuzzleCvec from image file */
 static PyObject *
 get_cvec_from_file(PyObject *self, PyObject *args)
 {
@@ -224,6 +232,7 @@ get_cvec_from_file(PyObject *self, PyObject *args)
     return cvec_tuple;
 }
 
+/* Compress cvec tuple */
 static PyObject *
 compress_cvec(PyObject *self, PyObject *args)
 {
@@ -253,6 +262,7 @@ compress_cvec(PyObject *self, PyObject *args)
     return compressed_cvec_tuple;
 }
 
+/* Uncompress cvec tuple */
 static PyObject *
 uncompress_cvec(PyObject *self, PyObject *args)
 {
@@ -281,6 +291,10 @@ uncompress_cvec(PyObject *self, PyObject *args)
 
     return cvec_tuple;
 }
+
+/**************************************************
+// Methods to set tunables
+**************************************************/
 
 static PyObject *
 set_max_width(PyObject *self, PyObject *args)
@@ -402,6 +416,10 @@ set_autocrop(PyObject *self, PyObject *args)
     return Py_BuildValue("i", result);
 }
 
+/**************************************************
+// Type definitions
+**************************************************/
+
 static PyMethodDef PyPuzzleMethods[] = {
     {"Puzzle", (PyCFunction)puzzle_new, METH_NOARGS, ""},
     {NULL, NULL, 0, NULL}
@@ -487,6 +505,10 @@ static PyTypeObject Puzzle_Type = {
     0,                          /* tp_traverse */
     0,                          /* tp_clear */
 };
+
+/**************************************************
+// Module level
+**************************************************/
 
 PyMODINIT_FUNC
 initpypuzzle(void)

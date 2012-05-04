@@ -1,0 +1,14 @@
+#
+# MANIFEST.in
+# Manifest template for creating the source distribution.
+#
+
+include COPYING
+include INSTALL
+include README
+include MANIFEST.in
+include src/pypuzzle.c
+include tests/*.py
+include tests/*.jpg
+
+# exclude unfinished test scripts

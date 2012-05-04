@@ -1,14 +1,28 @@
+import os
 from distutils.core import setup, Extension
 
-module = Extension(
+ext = Extension(
             'pypuzzle',
-            sources=['pypuzzle.c'],
+            sources=[
+                os.path.join('src', 'pypuzzle.c')
+            ],
             libraries=['puzzle', 'gd']
         )
 
 setup (
     name='pypuzzle',
     version='1.0',
-    description='A python wrapper for libpuzzle.',
-    ext_modules=[module]
+    description='PyPuzzle -- Puzzle module for Python',
+    author='Archangel_SDY',
+    author_email='Archangel.SDY@gmail.com',
+    url='http://archangelsdy.github.com/PyPuzzle',
+    classifiers=[
+        'Programming Language :: C',
+        'Operating System :: POSIX :: Linux',
+        'License :: OSI Approved :: MIT License',
+        'Topic :: Multimedia :: Graphics',
+        'Development Status :: 4 - Beta'
+    ],
+    ext_modules=[ext],
+    long_description="""This module provides Python bindings for the Puzzle library."""
 )
