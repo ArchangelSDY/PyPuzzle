@@ -12,10 +12,10 @@ ext = Extension(
 setup (
     name='pypuzzle',
     version='1.0',
-    description='PyPuzzle -- Puzzle module for Python',
+    description='PyPuzzle -- A Python binding for libpuzzle',
     author='Archangel_SDY',
     author_email='Archangel.SDY@gmail.com',
-    url='http://archangelsdy.github.com/PyPuzzle',
+    url='https://github.com/ArchangelSDY/PyPuzzle',
     classifiers=[
         'Programming Language :: C',
         'Operating System :: POSIX :: Linux',
@@ -24,5 +24,5 @@ setup (
         'Development Status :: 4 - Beta'
     ],
     ext_modules=[ext],
-    long_description="""This module provides Python bindings for the Puzzle library."""
+    long_description="""This module provides Python bindings for libpuzzle."""
 )

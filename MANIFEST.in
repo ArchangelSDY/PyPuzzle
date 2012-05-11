@@ -5,7 +5,7 @@
 
 include COPYING
 include INSTALL
-include README
+include README.md
 include MANIFEST.in
 include src/pypuzzle.c
 include tests/*.py

@@ -1,11 +1,20 @@
 Metadata-Version: 1.0
-Name: pypuzzle
+Name: PyPuzzle
 Version: 1.0
-Summary: PyPuzzle -- Puzzle module for Python
-Home-page: http://archangelsdy.github.com/PyPuzzle
+Summary: PyPuzzle -- A Python binding for libpuzzle
+Home-page: https://github.com/ArchangelSDY/PyPuzzle
 Author: Archangel_SDY
 Author-email: Archangel.SDY@gmail.com
-License: MIT
+License: License :: OSI Approved :: MIT License
 Description: 
-This module provides Python bindings for the Puzzle library.
-Platform: Linux
+    This module provides Python bindings for libpuzzle.
+
+    Consult the project page at Github for more details: https://github.com/ArchangelSDY/PyPuzzle
+
+Platform: Operating System :: POSIX :: Linux
+Classifier: Programming Language :: C
+Classifier: Operating System :: POSIX :: Linux
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Topic :: Multimedia :: Graphics
+Classifier: Development Status :: 4 - Beta
+
