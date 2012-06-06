@@ -3,6 +3,12 @@ For more details, consult 'COMPLIATION' section on this page: http://download.pu
 
 Distutils
 ---------
+Before compiling, make sure you have header files of libpuzzle and libgd2 installed.
+
+You can install them from source on Ubuntu:
+
+	apt-get install libgd2-xpm-dev
+	apt-get install libpuzzle-dev
 
 Build and install pypuzzle with the following commands:
 
