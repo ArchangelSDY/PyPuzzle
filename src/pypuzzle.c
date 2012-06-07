@@ -124,11 +124,10 @@ puzzle_new(PyObject *dummy)
 
     PuzzleObject *self = NULL;
 
-    self = (PuzzleObject *)PyObject_GC_New(PuzzleObject, p_Puzzle_Type);
+    self = (PuzzleObject *)PyObject_New(PuzzleObject, p_Puzzle_Type);
     if (self == NULL) {
         return NULL;
     }
-    PyObject_GC_Track(self);
 
     puzzle_init_context(&self->context);
     self->dict = NULL;
@@ -140,14 +139,11 @@ puzzle_new(PyObject *dummy)
 static void
 puzzle_dealloc(PuzzleObject *self)
 {
-    PyObject_GC_UnTrack(self);
-    Py_TRASHCAN_SAFE_BEGIN(self);
-
     ZAP(self->dict);
+
     puzzle_free_context(&self->context);
     
-    PyObject_GC_Del(self);
-    Py_TRASHCAN_SAFE_END(self);
+    PyObject_Del(self);
 }
 
 /* Get normalized distance between two image files */
