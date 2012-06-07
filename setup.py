@@ -11,7 +11,7 @@ ext = Extension(
 
 setup (
     name='pypuzzle',
-    version='1.0',
+    version='1.1',
     description='PyPuzzle -- A Python binding for libpuzzle',
     author='Archangel_SDY',
     author_email='Archangel.SDY@gmail.com',
