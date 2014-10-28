@@ -163,8 +163,14 @@ get_distance_from_file(PyObject *self, PyObject *args)
     puzzle_init_cvec(&po->context, &cvec_1);
     puzzle_init_cvec(&po->context, &cvec_2);
 
-    puzzle_fill_cvec_from_file(&po->context, &cvec_1, file_path_1);
-    puzzle_fill_cvec_from_file(&po->context, &cvec_2, file_path_2);
+    if (puzzle_fill_cvec_from_file(&po->context, &cvec_1, file_path_1) != 0) {
+        PyErr_Format(PyExc_IOError, "Fail to read file: %s", file_path_1);
+        return NULL;
+    }
+    if (puzzle_fill_cvec_from_file(&po->context, &cvec_2, file_path_2) != 0) {
+        PyErr_Format(PyExc_IOError, "Fail to read file: %s", file_path_2);
+        return NULL;
+    }
 
     double distance = puzzle_vector_normalized_distance(&po->context, &cvec_1, &cvec_2, 1);
 
@@ -218,7 +224,10 @@ get_cvec_from_file(PyObject *self, PyObject *args)
     puzzle_init_cvec(&po->context, &cvec);
 
     // Fill cvec
-    puzzle_fill_cvec_from_file(&po->context, &cvec, file_path);
+    if (puzzle_fill_cvec_from_file(&po->context, &cvec, file_path) != 0) {
+        PyErr_Format(PyExc_IOError, "Fail to read file: %s", file_path);
+        return NULL;
+    }
 
     // Convert cvec to tuple
     PyObject *cvec_tuple = cvec_to_tuple(&cvec);
