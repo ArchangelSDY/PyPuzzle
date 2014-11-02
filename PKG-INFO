@@ -1,12 +1,12 @@
-Metadata-Version: 1.1
+Metadata-Version: 1.2
 Name: PyPuzzle
-Version: 1.1
+Version: 1.2
 Summary: PyPuzzle -- A Python binding for libpuzzle
 Home-page: https://github.com/ArchangelSDY/PyPuzzle
 Author: Archangel_SDY
 Author-email: Archangel.SDY@gmail.com
 License: License :: OSI Approved :: MIT License
-Description: 
+Description:
     This module provides Python bindings for libpuzzle.
 
     Consult the project page at Github for more details: https://github.com/ArchangelSDY/PyPuzzle

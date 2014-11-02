@@ -71,3 +71,10 @@ Puzzle.set_autocrop(enable)
 ```
 
 Consult [original page](http://download.pureftpd.org/pub/pure-ftpd/misc/libpuzzle/doc/man3/puzzle_set.3.html) of libpuzzle for more details.
+
+## Changes
+
+### v1.2
+
+* Raise IOError in `get_cvec_from_file` and `get_distance_from_file` if error
+occurred when reading from file.
