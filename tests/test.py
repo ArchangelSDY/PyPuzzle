@@ -35,6 +35,11 @@ class TestPyPuzzle(unittest.TestCase):
         distance = self.puzzle.get_distance_from_cvec(cvec_1, cvec_2)
         self.assertTrue(distance > 0.01)
 
+    def test_get_distance_from_cvec_invalid_types(self):
+        # Invalid arg type should not lead to crash
+        with self.assertRaises(TypeError):
+            self.puzzle.get_distance_from_cvec(1, 2)
+
     def test_compress_cvec(self):
         cvec = self.puzzle.get_cvec_from_file('1.jpg')
         compressed_cvec = self.puzzle.compress_cvec(cvec)

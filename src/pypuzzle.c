@@ -192,6 +192,11 @@ get_distance_from_cvec(PyObject *self, PyObject *args)
         return NULL;
     }
 
+    if (!PyTuple_Check(cvec_tuple_1) || !PyTuple_Check(cvec_tuple_2)) {
+        PyErr_Format(PyExc_TypeError, "Should pass in tuple objects");
+        return NULL;
+    }
+
     PuzzleCvec cvec_1, cvec_2;
     puzzle_init_cvec(&po->context, &cvec_1);
     puzzle_init_cvec(&po->context, &cvec_2);
