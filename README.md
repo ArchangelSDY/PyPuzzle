@@ -6,7 +6,7 @@ For more information about libpuzzle, consult its [home page](http://libpuzzle.p
 
 ## Installation
 
-At present, PyPuzzle has only been tested under Linux.
+At present, PyPuzzle has only been tested under Linux and OS X 10.9.
 
 Before compiling, make sure you have header files of libpuzzle and libgd2 installed. See 'COMPILATION' section in [the doc of libpuzzle](http://download.pureftpd.org/pub/pure-ftpd/misc/libpuzzle/doc/README).
 
@@ -15,7 +15,10 @@ For Ubuntu users, you can just install them from source:
 	apt-get install libgd2-xpm-dev
 	apt-get install libpuzzle-dev
 
-You can install PyPuzzle with pip:
+Note: In case of missing some image formats support, make sure you have corresponding image libraries installed.
+For example, libjpeg/libpng, etc.
+
+Then you can install PyPuzzle with pip:
 
 ```shell
 $ pip install pypuzzle
