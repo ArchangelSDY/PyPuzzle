@@ -1,6 +1,6 @@
-Metadata-Version: 1.2
+Metadata-Version: 1.2.1
 Name: PyPuzzle
-Version: 1.2
+Version: 1.2.1
 Summary: PyPuzzle -- A Python binding for libpuzzle
 Home-page: https://github.com/ArchangelSDY/PyPuzzle
 Author: Archangel_SDY
@@ -16,5 +16,5 @@ Classifier: Programming Language :: C
 Classifier: Operating System :: POSIX :: Linux
 Classifier: License :: OSI Approved :: MIT License
 Classifier: Topic :: Multimedia :: Graphics
-Classifier: Development Status :: 4 - Beta
+Classifier: Development Status :: 5 - Production/Stable
 

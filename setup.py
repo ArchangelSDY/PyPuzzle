@@ -11,7 +11,7 @@ ext = Extension(
 
 setup (
     name='pypuzzle',
-    version='1.2',
+    version='1.2.1',
     description='PyPuzzle -- A Python binding for libpuzzle',
     author='Archangel_SDY',
     author_email='Archangel.SDY@gmail.com',
@@ -21,7 +21,7 @@ setup (
         'Operating System :: POSIX :: Linux',
         'License :: OSI Approved :: MIT License',
         'Topic :: Multimedia :: Graphics',
-        'Development Status :: 4 - Beta'
+        'Development Status :: 5 - Production/Stable'
     ],
     ext_modules=[ext],
     long_description="""This module provides Python bindings for libpuzzle."""
