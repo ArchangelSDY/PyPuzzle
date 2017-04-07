@@ -1,6 +1,27 @@
 #include <Python.h>
 #include <puzzle.h>
 
+#if PY_MAJOR_VERSION >= 3
+#define PyInt_AsLong(x) (PyLong_AsLong((x)))
+
+static PyObject *
+Py_FindMethod(PyMethodDef *def, PyObject *self, char *name)
+{
+    // Here we do not check `__doc__` for simplicity
+
+    while (def->ml_name != NULL) {
+        if (name[0] == def->ml_name[0] && strcmp(name+1, def->ml_name+1) == 0) {
+            return PyCFunction_New(def, self);
+        }
+
+        def++;
+    }
+
+    PyErr_SetString(PyExc_AttributeError, name);
+    return NULL;
+}
+#endif
+
 #undef UNUSED
 #define UNUSED(var)     ((void)&var)
 
@@ -463,6 +484,7 @@ puzzle_get_attr(PuzzleObject *self, char *attrname)
             return value;
         }
     }
+
     return Py_FindMethod(PuzzleObjectMethods, (PyObject *)self, attrname);
 }
 
@@ -489,8 +511,9 @@ puzzle_set_attr(PuzzleObject *self, char *attrname, PyObject *value)
 }
 
 static PyTypeObject Puzzle_Type = {
-    PyObject_HEAD_INIT(&PyType_Type)
-    0,                          /* ob_size */
+    // PyObject_HEAD_INIT(&PyType_Type)
+    // 0,                          /* ob_size */
+    PyVarObject_HEAD_INIT(&PyType_Type, 0)
     "pypuzzle.Puzzle",          /* tp_name */
     sizeof(PuzzleObject),       /* tp_basicsize */
     0,                          /* tp_itemsize */
@@ -520,12 +543,29 @@ static PyTypeObject Puzzle_Type = {
 // Module level
 **************************************************/
 
+#if PY_MAJOR_VERSION >= 3
+static struct PyModuleDef Puzzle_Module = {
+    PyModuleDef_HEAD_INIT,
+    "pypuzzle",
+    NULL,
+    -1,
+    PyPuzzleMethods
+};
+
+PyMODINIT_FUNC
+PyInit_pypuzzle(void)
+{
+    p_Puzzle_Type = &Puzzle_Type;
+    return PyModule_Create(&Puzzle_Module);
+}
+#else
 PyMODINIT_FUNC
 initpypuzzle(void)
 {
     p_Puzzle_Type = &Puzzle_Type;
     (void) Py_InitModule("pypuzzle", PyPuzzleMethods);
 }
+#endif
 
 int
 main(int argc, char *argv[])
@@ -536,8 +576,10 @@ main(int argc, char *argv[])
     // Initialize the Python interpreter.
     Py_Initialize();
 
-    // Add a static moduel.
+#if PY_MAJOR_VERSION < 3
+    // Add a static module.
     initpypuzzle();
+#endif
 
     return 0;
 }
