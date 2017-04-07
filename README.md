@@ -1,4 +1,4 @@
-# PyPuzzle
+# PyPuzzle [![Build Status](https://travis-ci.org/ArchangelSDY/PyPuzzle.svg?branch=master)](https://travis-ci.org/ArchangelSDY/PyPuzzle)
 
 PyPuzzle provides python bindings for libpuzzle. Libpuzzle is designed to quickly find visually similar images (gif, png, jpg), even if they have been resized, recompressed, recolored or slightly modified. Since libpuzzle is a C library, PyPuzzle connects it to python.
 
