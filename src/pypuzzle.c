@@ -62,7 +62,7 @@ cvec_to_tuple(PuzzleCvec *cvec)
         return NULL;
     }
 
-    int i = 0;
+    size_t i = 0;
     for (i = 0; i < cvec->sizeof_vec; i++) {
         PyObject *value = Py_BuildValue("b", cvec->vec[i]);
         if (!value) {
@@ -103,7 +103,7 @@ compressed_cvec_to_tuple(PuzzleCompressedCvec *compressed_cvec)
     }
 
     // Fill tuple
-    int i = 0;
+    size_t i = 0;
     for (i = 0; i < compressed_cvec->sizeof_compressed_vec; i++) {
         PyObject *value = Py_BuildValue("B", compressed_cvec->vec[i]);
         if (!value) {
@@ -571,7 +571,12 @@ int
 main(int argc, char *argv[])
 {
     // Pass argv[0] to the Python interpreter.
+#if PY_MAJOR_VERSION < 3
     Py_SetProgramName(argv[0]);
+#else
+    wchar_t *name = Py_DecodeLocale(argv[0], NULL);
+    Py_SetProgramName(name);
+#endif
 
     // Initialize the Python interpreter.
     Py_Initialize();
