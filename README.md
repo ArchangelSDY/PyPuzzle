@@ -77,6 +77,10 @@ Consult [original page](http://download.pureftpd.org/pub/pure-ftpd/misc/libpuzzl
 
 ## Changes
 
+### v1.3
+
+* Add Python 3 support
+
 ### v1.2
 
 * Raise IOError in `get_cvec_from_file` and `get_distance_from_file` if error
