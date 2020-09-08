@@ -12,8 +12,7 @@ Before compiling, make sure you have header files of libpuzzle and libgd2 instal
 
 For Ubuntu users, you can just install them from source:
 
-	apt-get install libgd2-xpm-dev
-	apt-get install libpuzzle-dev
+	apt-get install libgd-dev libpuzzle-dev
 
 Note: In case of missing some image formats support, make sure you have corresponding image libraries installed.
 For example, libjpeg/libpng, etc.
